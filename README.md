@@ -1,2 +1,3 @@
 # M1_Informatique_UPS
-Projets, TPs durant mon année de M1 à l'université de Paul Sabatier
+
+Dans ce repository ce trouve la plupart des tps ainsi que les projets réalisé dans le cadre des différents UE proposés par l'université.
