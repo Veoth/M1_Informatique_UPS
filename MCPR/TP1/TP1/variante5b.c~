@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/types.h>
+
+
+/* Observations
+Segment de mémoire partagé sont accessible à différent processus.
+Persistant sur un système, nombre limité.
+Les détruire avant d'éteindre la machine.
+*/
+
+typedef struct{
+    int compteur;
+    float reel;
+}data_shm;
+
+data_shm *ptshm;
+
+void fils(int nombre)
+{
+	int i;
+ptshm->reel = 30.3;
+	for (i=0;i<nombre;i++)
+	{
+		ptshm->compteur--;
+	}
+
+}
+
+int main(int argc, char *argv[])
+{
+	int nombre, shmid;
+	if (argc != 2)
+	{
+		perror("Erreur 1\n");
+		exit(7);
+	}
+
+	nombre = atoi(argv[1]);
+	key_t key;
+	
+	// Id externe
+	// Pour avoir le meme segment de donnee il suffit de renseigner les deux même parametre.
+	if ((key = ftok("variante5.c", 8)) == -1)
+	{
+		perror("Erreur 2\n");
+		exit(1);
+	}	
+	
+	// Création d'un segment de mémoire partagé.
+	if ((shmid = shmget(key, sizeof(data_shm), IPC_CREAT | 0777)) == -1)
+	{
+		perror("Erreur 3\n");
+		exit(1);
+	}	
+	
+	// Attacher le segment
+	if ((ptshm = shmat(shmid, NULL, 0)) == (void*)-1)
+	{
+		perror("Erreur 4\n");
+		exit(3);
+	}
+	ptshm->compteur = 0;
+	fils(nombre);
+	printf("%d", ptshm->compteur);
+
+	// Detacher le segment
+	if (shmdt(ptshm) == -1)
+	{
+		perror("Erreur 5\n");
+		exit(4);
+	}
+
+
+	return EXIT_SUCCESS;
+}
+
+
